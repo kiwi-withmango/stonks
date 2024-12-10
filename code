@@ -1,0 +1,39 @@
+
+import requests
+import os
+
+
+
+STOCK = ("TSLA")
+COMPANY_NAME = "Tesla Inc"
+stock_api_key = os.environ['api']
+
+api = "https://www.alphavantage.co/query"news_api = "https://newsapi.org"stock_params = {
+    "function" : "TIME_SERIES_DAILY",    "symbol": STOCK,    "apikey" : stock_api_key,    "outputsize" : "compact",}
+
+news_params = {
+    "function" : "NEWS_SENTIMENT",    "tickers" : STOCK,    "sort" : "latest",    "limit" : 3,    "apikey" : stock_api_key,    "qInTitle" : "TESLA"}
+
+
+response  = requests.get(api, params = stock_params)
+response.raise_for_status()
+
+data = response.json()["Time Series (Daily)"]
+data_list = [value for (key,value) in data.items()]
+yesterday_data = data_list[0]
+yesterday_closing_price = yesterday_data['4. close']
+
+ere_data = data_list[1]
+ere_closing_price = ere_data["4. close"]
+
+change = abs(float(yesterday_closing_price) - float(ere_closing_price))
+
+diff_percent = (change / float(yesterday_closing_price)) * 100if diff_percent > 1:
+    news_response = requests.get(api, params=news_params)
+    news_response.raise_for_status()
+    articles = news_response.json()['feed'][:3]
+    print(articles)
+
+    formatted_articles = [f"Headline: {article['title']}. \nBrief: {article['summary']}" for article in articles]
+
+
